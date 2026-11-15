@@ -7,8 +7,8 @@ Please note that the following instruction is provided as-is. Neither this proje
 ## Contents
 
 There are 4 folders within this directory:
-- **cbl**, containing the actual COBOL source code
-- **jcl**, containing the JCL used to compile, link, and execute COBOL source code
+- **cbl**, containing the actual COBOL source code (including `PLAYGRND.cobol`, the designated code snippet sandbox)
+- **jcl**, containing the JCL used to compile, link, and execute COBOL source code (including `PLAYGRND.jcl`, the playground compile-link-go runner)
 - **jclproc**, containing the supplied cataloged procedure used in the JCL
 - **data**, containing the data used as input for the COBOL program
 
@@ -35,3 +35,10 @@ Note that the JCL references the following data sets,
 - `&SYSUID..CBL` where the COBOL source codes are stored
 - `&SYSUID..LOAD` where the COBOL load modules are stored
 - `&SYSUID..DATA` where the input data are stored
+
+### Using the Code Snippet Playground
+
+Students can use the playground members at any time to verify and experiment with concepts from the textbook:
+- `PLAYGRND.cobol` in `&SYSUID..CBL` provides pre-wired structural divisions and designated insertion slots for `WORKING-STORAGE SECTION` data definitions and `PROCEDURE DIVISION` logic.
+- `PLAYGRND.jcl` in `&SYSUID..JCL` compiles, link-edits, and executes `PLAYGRND.cobol` using procedure `IGYWCLG`.
+- Submit `PLAYGRND.jcl` using VS Code Zowe Explorer ("Submit Job") or Zowe CLI (`zowe jobs submit ds "&SYSUID..JCL(PLAYGRND)" --vasc`), and view the results in the `COBRUN:SYSOUT` spool step.

@@ -112,6 +112,7 @@ This chapter introduces the basics of COBOL syntax. It then demonstrates how to 
 - **COBOL Divisions**
      - **COBOL Divisions structure**
      - **What are the four Divisions of COBOL?**
+     - **Testing Code Snippets: The COBOL Playground**
 
 
 - **PROCEDURE DIVISION explained**
@@ -326,6 +327,31 @@ The DATA DIVISION is where characteristics of data are defined in one of the fol
 #### PROCEDURE DIVISION
 
 The PROCEDURE DIVISION contains instructions related to the manipulation of data and interfaces with other procedures are specified.
+
+### Testing Code Snippets: The COBOL Playground
+
+Throughout this course, theoretical sections introduce foundational COBOL syntax and language concepts through compact code snippets. To experiment with and run these snippets without the overhead of authoring complete four-division program skeletons and JCL job cards from scratch, a standardized playground is provided in the `Labs/` directory:
+
+- Source member: `Labs/cbl/PLAYGRND.cobol` (uploaded to `&SYSUID..CBL(PLAYGRND)`)
+- JCL runner: `Labs/jcl/PLAYGRND.jcl` (uploaded to `&SYSUID..JCL(PLAYGRND)`)
+
+To test code snippets from the textbook in your mainframe environment, follow this 3-step workflow:
+
+1. **Identify the Division**: Determine whether the snippet defines data declarations or procedural statements:
+   - Data declarations (`01`, `05`, `77`, `88` level variables, tables, condition names) belong in the `DATA DIVISION` under `WORKING-STORAGE SECTION`.
+   - Imperative statements (`MOVE`, `COMPUTE`, `PERFORM`, `IF`, `DISPLAY`, `SET`) belong in the `PROCEDURE DIVISION`.
+
+2. **Paste into PLAYGRND.cobol**: Open `&SYSUID..CBL(PLAYGRND)` in VS Code. Paste the snippet lines between the designated banner comments, respecting Area A (columns 8–11) and Area B (columns 12–72):
+   - **Area A** (columns 8–11): Division headers, section headers, paragraph names, and `01`/`77` level data item numbers.
+   - **Area B** (columns 12–72): Subordinate data item levels (`05`, `88`, etc.) and procedural statements (`DISPLAY`, `MOVE`, `COMPUTE`, `IF`, etc.).
+
+3. **Submit the JCL and View Spool Output**:
+   - In VS Code **Zowe Explorer**: Right-click `&SYSUID..JCL(PLAYGRND)` and select **Submit Job**.
+   - In **Zowe CLI**: Run:
+     ```bash
+     zowe jobs submit ds "<USERNAME>.JCL(PLAYGRND)" --vasc
+     ```
+   - In the Jobs view (or CLI terminal output), check the execution return code (`RC=0000`) and expand the spool files to view step `COBRUN:SYSOUT` for program execution output.
 
 ## PROCEDURE DIVISION explained
 
@@ -974,10 +1000,10 @@ While a table element has a collective name, the individual items within do not 
 Subscripting is using the data name of the table element, along with its occurrence number (which is called a subscript). The lowest possible subscript number is 1, which defines the first occurrence of a table element. We can also use literal or data name as a subscript. Note that if you are using a data name, it must be an elementary numeric integer.
 
 ```COBOL
-01  TABLE-NAME.
-    05  TABLE-ELEMENT OCCURS 3 TIMES    PIC X(03) VALUE "ABC".
-...
-    MOVE "DEF" TO TABLE-ELEMENT (2)
+       01  TABLE-NAME.
+           05  TABLE-ELEMENT OCCURS 3 TIMES    PIC X(03) VALUE "ABC".
+      * ...
+           MOVE "DEF" TO TABLE-ELEMENT (2)
 ```
 
 In the above example, the second TABLE-ELEMENT will contain "DEF" instead of "ABC".
@@ -997,14 +1023,14 @@ If you happen to have another table with the same number of table elements of th
 We can also define an index data item using the USAGE IS INDEX clause. These index data items can be used with any table. For example,
 
 ```COBOL
-77  INX-B  USAGE IS INDEX.
-...
-    SET INX-A TO 10.
-    SET INX-B TO INX-A.
-    PERFORM VARYING INX-A FROM 1 BY 1 UNTIL INX-A > INX-B
-        DISPLAY TABLE-ELEMENT (INX-A)
-        ...
-    END-PERFORM.
+       77  INX-B  USAGE IS INDEX.
+      * ...
+           SET INX-A TO 10.
+           SET INX-B TO INX-A.
+           PERFORM VARYING INX-A FROM 1 BY 1 UNTIL INX-A > INX-B
+               DISPLAY TABLE-ELEMENT (INX-A)
+      *        ...
+           END-PERFORM.
 ```
 
 The index name INX-A is used to traverse the TABLE-ELEMENT table, while INX-B is used to hold the index of the last element of the table. By doing this, we minimize the calculation of offsets and no conversion will be necessary for the UNTIL condition.
@@ -1052,13 +1078,13 @@ There are many ways we can load a table. The first one involves loading the tabl
 To load a table dynamically, we need to use the PERFORM statement with either subscripting or indexing. When doing this, we need to make sure that the data does not exceed the space allocated for the table. We will discuss file handling and the use of PERFORM clause in a later chapter. For example,
 
 ```COBOL
-PROCEDURE DIVISION.
-    ...
-    PERFORM READ-FILE.
-    PERFORM VARYING SUB FROM 1 BY 1 UNTIL END-OF-FILE
-        MOVE DATA TO WS-DATA(SUB)
-        PERFORM READ-FILE
-    END-PERFORM.
+       PROCEDURE DIVISION.
+      * ...
+           PERFORM READ-FILE.
+           PERFORM VARYING SUB FROM 1 BY 1 UNTIL END-OF-FILE
+               MOVE DATA TO WS-DATA(SUB)
+               PERFORM READ-FILE
+           END-PERFORM.
 ```
 
 In this example above, we execute a paragraph that reads files, and then we will iterate through every line of the file until the end, putting each value into the table.
@@ -2419,11 +2445,11 @@ Compounded conditional expressions are enclosed in parenthesis and their Boolean
 
 The code snippet below demonstrates a compounded conditional expression using the AND Boolean operator.
 
-`IF (5 > 1 AND 1 > 2) THEN .... ELSE ....`
+`IF (5 > 1 AND 1 > 2) THEN DISPLAY 'TRUE' ELSE DISPLAY 'FALSE'.`
 
 This conditional expression evaluates to false because while 5 > 1 is true, 1 > 2 is false.  The AND operation requires both expressions to be true to return true for the compounded condition expression.  Let's show another implementation, this time using the OR Boolean operator.
 
-`IF (5 > 1 OR 1 > 2) THEN .... ELSE ....`
+`IF (5 > 1 OR 1 > 2) THEN DISPLAY 'TRUE' ELSE DISPLAY 'FALSE'.`
 
 This conditional expression evaluates to true because while 1 > 2 is false, 5 > 1 is true.  The OR operation requires only one of the expressions to be true to return true for the entire compounded condition expression.  More conditional operators used for relation, class, and sign conditions are discussed further in the chapter.
 
@@ -2450,28 +2476,23 @@ Observe in Example 1.  'The State is not Texas' is written as a result of the fi
 
 
 ```COBOL
-WORKING-STORAGE SECTION.
-01 USA-STATE     PIC X(2) VALUE SPACES.
-   88 STATE      VALUE 'TX'.
-....
-....
-PROCEDURE DIVISION.
-....
-....
-MOVE 'AZ' TO USA-STATE.
-....
-....
-IF STATE DISPLAY 'The State is Texas'
-   ELSE DISPLAY  'The State is not Texas'
-END-IF.
-....
-....
-MOVE 'TX' TO USA-STATE.
-....
-....
-IF STATE DISPLAY 'The State is Texas'
-   ELSE DISPLAY  'The State is not Texas'
-END-IF.
+       WORKING-STORAGE SECTION.
+       01  USA-STATE                   PIC X(2) VALUE SPACES.
+           88  STATE                   VALUE 'TX'.
+      * ...
+       PROCEDURE DIVISION.
+      * ...
+           MOVE 'AZ' TO USA-STATE.
+      * ...
+           IF STATE DISPLAY 'The State is Texas'
+              ELSE DISPLAY  'The State is not Texas'
+           END-IF.
+      * ...
+           MOVE 'TX' TO USA-STATE.
+      * ...
+           IF STATE DISPLAY 'The State is Texas'
+              ELSE DISPLAY  'The State is not Texas'
+           END-IF.
 ```
 *Example 1.  Using 88-level conditional name*
 
@@ -2481,28 +2502,23 @@ Other level number data-names require the condition expression to include a Bool
 
 
 ```COBOL
-WORKING-STORAGE SECTION.
-01 USA-STATE.
-   05 STATE      PIC X(2) VALUE SPACES.
-....
-....
-PROCEDURE DIVISION.
-....
-....
-MOVE 'AZ' TO STATE.
-....
-....
-IF STATE = 'TX' DISPLAY 'The State is Texas'
-   ELSE DISPLAY  'The State is not Texas'
-END-IF.
-....
-....
-MOVE 'TX' TO STATE.
-....
-....
-IF STATE = 'TX' DISPLAY 'The State is Texas'
-   ELSE DISPLAY  'The State is not Texas'
-END-IF.  
+       WORKING-STORAGE SECTION.
+       01  USA-STATE.
+           05  STATE                   PIC X(2) VALUE SPACES.
+      * ...
+       PROCEDURE DIVISION.
+      * ...
+           MOVE 'AZ' TO STATE.
+      * ...
+           IF STATE = 'TX' DISPLAY 'The State is Texas'
+              ELSE DISPLAY  'The State is not Texas'
+           END-IF.
+      * ...
+           MOVE 'TX' TO STATE.
+      * ...
+           IF STATE = 'TX' DISPLAY 'The State is Texas'
+              ELSE DISPLAY  'The State is not Texas'
+           END-IF.
 ```
 *Example 2.  Without 88-level conditional name*
 
@@ -2570,16 +2586,14 @@ A PERFORM with UNTIL phrase is a conditional expression.  In the UNTIL phrase fo
 
 
 ```COBOL
-WORKING-STORAGE SECTION.
-01 FACIAL-EXP    PIC X(11) VALUE SPACES.
-   88 HAPPY      VALUE 'HAPPY'.
-....
-....
-PROCEDURE DIVISION.
-....
-....
-PERFORM SAY-SOMETHING-DIFFERENT UNTIL HAPPY
-END-PERFORM.
+       WORKING-STORAGE SECTION.
+       01  FACIAL-EXP                  PIC X(11) VALUE SPACES.
+           88  HAPPY                   VALUE 'HAPPY'.
+      * ...
+       PROCEDURE DIVISION.
+      * ...
+           PERFORM SAY-SOMETHING-DIFFERENT UNTIL HAPPY
+           END-PERFORM.
 ```
 
 *Example 5. PERFORM statement with 88-level conditional name*
@@ -2588,15 +2602,13 @@ END-PERFORM.
 It is also possible to use PERFORM statement without the use of an 88-level conditional name, observe Example 6.
 
 ```COBOL
-WORKING-STORAGE SECTION.
-01 FACIAL-EXP    PIC X(11) VALUE SPACES.
-....
-....
-PROCEDURE DIVISION.
-....
-....
-PERFORM SAY-SOMETHING-DIFFERENT UNTIL FACIAL-EXP = "HAPPY"
-END-PERFORM.
+       WORKING-STORAGE SECTION.
+       01  FACIAL-EXP                  PIC X(11) VALUE SPACES.
+      * ...
+       PROCEDURE DIVISION.
+      * ...
+           PERFORM SAY-SOMETHING-DIFFERENT UNTIL FACIAL-EXP = "HAPPY"
+           END-PERFORM.
 ```
 
 *Example 6. PERFORM statement without 88-level conditional name*
@@ -2607,18 +2619,16 @@ END-PERFORM.
 The SEARCH statement searches a table for an element that satisfies the specified condition and adjusts the associated index to indicate that element. Tables, effectively an array of values, are created with an OCCURS clause applied to WORK-STORAGE data names. A WHEN clause is utilized in SEARCH statements to verify if the element searched for satisfies the specified condition. Assuming FACIAL-EXP has many possible values, then SEARCH WHEN is an alternative conditional expression, observe Example 7.
 
 ```COBOL
-WORKING-STORAGE SECTION.
-01  FACIAL-EXP-TABLE REDEFINES FACIAL-EXP-LIST.
-    05  FACIAL-EXP  PIC X(11) OCCURS n TIMES INDEXED BY INX-A.
-        88  HAPPY VALUE "HAPPY".
-....
-....
-PROCEDURE DIVISION.
-....
-....
-SEARCH FACIAL-EXP
-    WHEN HAPPY(INX-A) DISPLAY 'I am glad you are happy'
-END-SEARCH
+       WORKING-STORAGE SECTION.
+       01  FACIAL-EXP-TABLE REDEFINES FACIAL-EXP-LIST.
+           05  FACIAL-EXP  PIC X(11) OCCURS n TIMES INDEXED BY INX-A.
+               88  HAPPY VALUE "HAPPY".
+      * ...
+       PROCEDURE DIVISION.
+      * ...
+           SEARCH FACIAL-EXP
+               WHEN HAPPY(INX-A) DISPLAY 'I am glad you are happy'
+           END-SEARCH
 ```
 *Example 7. SEARCH WHEN statement*           
 
