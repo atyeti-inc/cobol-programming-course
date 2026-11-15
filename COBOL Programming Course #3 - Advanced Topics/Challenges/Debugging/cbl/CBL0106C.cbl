@@ -46,11 +46,10 @@
        01  Filler.
            05 LASTREC          PIC X          VALUE SPACE.
            05 DISP-SUB1        PIC 9999.
-           05 SUB1             PIC 99.
            05 OVERLIMIT-MAX    PIC S9(4) COMP VALUE 20.
 
          01 OVERLIMIT.
-           03 FILLER OCCURS 20 TIMES.
+           03 FILLER OCCURS 20 TIMES INDEXED BY SUB1.
                05  OL-ACCT-NO            PIC X(8).
                05  OL-ACCT-LIMIT         PIC S9(7)V99 COMP-3.
                05  OL-ACCT-BALANCE       PIC S9(7)V99 COMP-3.
@@ -137,7 +136,7 @@
            WRITE PRINT-REC FROM HEADER-3.
            WRITE PRINT-REC FROM HEADER-4.
            MOVE SPACES TO PRINT-REC.
-           MOVE 0 TO SUB1.
+           SET SUB1 TO 1.
       *
        READ-NEXT-RECORD.
            PERFORM READ-RECORD
@@ -163,7 +162,6 @@
       *
        IS-OVERLIMIT.
            IF ACCT-LIMIT < ACCT-BALANCE THEN
-               ADD 1 TO SUB1
       * Check if there is enough space in the array, in case the input 
       * file changes again. A handled error is easier to find and fix 
       * than a buffer overwrite error.
@@ -176,6 +174,7 @@
                MOVE ACCT-BALANCE TO OL-ACCT-BALANCE(SUB1)
                MOVE LAST-NAME TO OL-LASTNAME(SUB1)
                MOVE FIRST-NAME TO OL-FIRSTNAME(SUB1)
+               SET SUB1 UP BY 1
             END-IF.
       *
        IS-STATE-VIRGINIA.
@@ -184,12 +183,13 @@
            END-IF.
       *
        WRITE-OVERLIMIT.
-           IF SUB1 = 0 THEN
+           IF SUB1 = 1 THEN
                MOVE OVERLIMIT-STATUS TO PRINT-REC
                WRITE PRINT-REC
            ELSE
                MOVE 'ACCOUNTS OVERLIMIT' TO OLS-STATUS
-               MOVE SUB1 TO  DISP-SUB1
+               SET SUB1 DOWN BY 1
+               SET DISP-SUB1 TO SUB1
                MOVE DISP-SUB1 TO OLS-ACCTNUM
                MOVE OVERLIMIT-STATUS TO PRINT-REC
                WRITE PRINT-REC
