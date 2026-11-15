@@ -41,4 +41,5 @@ Note that the JCL references the following data sets,
 Students can use the playground members at any time to verify and experiment with concepts from the textbook:
 - `PLAYGRND.cobol` in `&SYSUID..CBL` provides pre-wired structural divisions and designated insertion slots for `WORKING-STORAGE SECTION` data definitions and `PROCEDURE DIVISION` logic.
 - `PLAYGRND.jcl` in `&SYSUID..JCL` compiles, link-edits, and executes `PLAYGRND.cobol` using procedure `IGYWCLG`.
+- When testing snippets that span multiple divisions (e.g. data definitions and procedural statements), split the code across the respective insertion slots in `PLAYGRND.cobol`: paste data definitions (`01`, `05`, `88` levels) into the `WORKING-STORAGE SECTION` slot, and procedural statements (`MOVE`, `IF`, `PERFORM`, `DISPLAY`, etc.) into the `PROCEDURE DIVISION` slot.
 - Submit `PLAYGRND.jcl` using VS Code Zowe Explorer ("Submit Job") or Zowe CLI (`zowe jobs submit ds "&SYSUID..JCL(PLAYGRND)" --vasc`), and view the results in the `COBRUN:SYSOUT` spool step.
