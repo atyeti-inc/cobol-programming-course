@@ -46,10 +46,9 @@
        01  Filler.
            05 LASTREC          PIC X VALUE SPACE.
            05 DISP-SUB1        PIC 9999.
-           05 SUB1             PIC 99.
 
          01 OVERLIMIT.
-           03 FILLER OCCURS 5  TIMES.
+           03 FILLER OCCURS 5  TIMES INDEXED BY SUB1.
                05  OL-ACCT-NO            PIC X(8).
                05  OL-ACCT-LIMIT         PIC S9(7)V99 COMP-3.
                05  OL-ACCT-BALANCE       PIC S9(7)V99 COMP-3.
@@ -136,7 +135,7 @@
            WRITE PRINT-REC FROM HEADER-3.
            WRITE PRINT-REC FROM HEADER-4.
            MOVE SPACES TO PRINT-REC.
-           MOVE 1 TO SUB1.
+           SET SUB1 TO 1.
       *
        READ-NEXT-RECORD.
            PERFORM READ-RECORD
@@ -167,7 +166,7 @@
                MOVE LAST-NAME TO OL-LASTNAME(SUB1)
                MOVE FIRST-NAME TO OL-FIRSTNAME(SUB1)
             END-IF.
-            ADD 1 TO SUB1.
+            SET SUB1 UP BY 1.
 
        IS-STATE-VIRGINIA.
            IF USA-STATE = 'Virginia' THEN
@@ -180,7 +179,7 @@
                WRITE PRINT-REC
            ELSE
                MOVE 'ACCOUNTS OVERLIMIT' TO OLS-STATUS
-               MOVE SUB1 TO  DISP-SUB1
+               SET DISP-SUB1 TO SUB1
                MOVE DISP-SUB1 TO OLS-ACCTNUM
                MOVE OVERLIMIT-STATUS TO PRINT-REC
                WRITE PRINT-REC
